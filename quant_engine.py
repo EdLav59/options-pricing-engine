@@ -1,7 +1,7 @@
 import sys
 import subprocess
 
-# --- AUTO-INSTALLER (Ensures libraries exist on Colab) ---
+# --- AUTO-INSTALLER ---
 def install_and_import(package):
     try:
         __import__(package)
@@ -22,38 +22,39 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import seaborn as sns
 
-# Visual Style
+# Visual Configuration
 sns.set_theme(style="darkgrid")
 
 # ======================================================
-# DATA FETCHING (Anti-Blocking Fix)
+# DATA FETCHING (ROBUST FALLBACK)
 # ======================================================
-def get_session():
-    """Creates a browser-like session to bypass Yahoo Finance blocking."""
-    session = requests.Session()
-    # Use a standard Chrome User-Agent
-    session.headers.update({
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    })
-    return session
-
-def fetch_price(ticker):
-    print(f"   Fetching live data for {ticker}...")
+def fetch_price_robust(ticker):
+    print(f"   [INFO] Attempting to fetch live data for {ticker}...")
+    
+    # METHOD 1: Try yf.download (often more robust than Ticker)
     try:
-        session = get_session()
-        # Pass the session to yfinance
-        dat = yf.Ticker(ticker, session=session)
-        history = dat.history(period="1d")
-        
-        if history.empty:
-            raise ValueError("Yahoo returned empty data. Ticker might be delisted or requires a suffix (e.g. .PA).")
-            
-        price = history['Close'].iloc[-1]
-        print(f"   Current Price: ${price:.2f}")
-        return price
-    except Exception as e:
-        print(f"   [WARNING] Error fetching price ({e}). Using default $100.00.")
-        return 100.0
+        # Suppress progress bar to keep output clean
+        data = yf.download(ticker, period="1d", progress=False)
+        if not data.empty:
+            price = data['Close'].iloc[-1]
+            # Handle cases where data might be a Series or scalar
+            if isinstance(price, pd.Series):
+                price = price.iloc[0]
+            print(f"   [SUCCESS] Live Price Found: ${float(price):.2f}")
+            return float(price)
+    except Exception:
+        pass # If fails, silently move to method 2
+
+    # METHOD 2: Manual Fallback
+    print(f"   [WARNING] Yahoo Finance blocked the request (common on Colab).")
+    print(f"   [ACTION] Please verify the price of {ticker} manually.")
+    
+    while True:
+        try:
+            manual_price = input(f"   >>> Enter the current price of {ticker}: ")
+            return float(manual_price)
+        except ValueError:
+            print("   Invalid number. Please try again (e.g., 150.50).")
 
 # ======================================================
 # COMPUTATIONAL ENGINES
@@ -85,7 +86,7 @@ class MonteCarloEngine:
         self.S, self.K, self.T, self.r, self.sigma, self.sims = S, K, T, r, sigma, int(simulations)
 
     def price(self):
-        # Vectorized for speed
+        # Vectorized for performance
         z = np.random.standard_normal(self.sims)
         ST = self.S * np.exp((self.r - 0.5 * self.sigma ** 2) * self.T + self.sigma * np.sqrt(self.T) * z)
         disc = np.exp(-self.r * self.T)
@@ -141,20 +142,11 @@ class Visualizer:
         sns.heatmap(gamma_map, xticklabels=np.round(spot_range,0), yticklabels=np.round(v_range,2), cmap="magma", ax=ax2)
         ax2.set_title("Gamma Heatmap (Risk)"); ax2.set_xlabel("Spot"); ax2.set_ylabel("Volatility")
 
-        # 3. Volatility Smile
+        # 3. Smile (Static Message)
         ax3 = fig.add_subplot(133)
-        try:
-            session = get_session()
-            stock = yf.Ticker(self.ticker, session=session)
-            if stock.options:
-                calls = stock.option_chain(stock.options[0]).calls
-                calls = calls[(calls['volume'] > 2) & (calls['impliedVolatility'] > 0.01)]
-                sns.scatterplot(data=calls, x='strike', y='impliedVolatility', hue='volume', ax=ax3, palette='coolwarm')
-                ax3.set_title(f"Vol Smile: {stock.options[0]}")
-            else:
-                ax3.text(0.5, 0.5, "No options found", ha='center')
-        except:
-            ax3.text(0.5, 0.5, "Data Unavailable", ha='center')
+        ax3.text(0.5, 0.5, "Market Data Visualization\nDisabled (Connection Limit)", ha='center')
+        ax3.set_title("Implied Volatility Smile")
+        ax3.axis('off')
         
         plt.tight_layout()
         plt.show()
@@ -162,51 +154,42 @@ class Visualizer:
 # ======================================================
 # MAIN EXECUTION
 # ======================================================
-def get_user_input():
-    print("-" * 50)
-    conf = {}
-    conf['TICKER'] = input(">>> Ticker (e.g. TTE.PA, AAPL): ").upper().strip()
-    conf['SPOT_PRICE'] = None # Fetch automatically
-    
-    try:
-        conf['STRIKE'] = float(input(">>> Strike Price: "))
-        conf['DAYS'] = float(input(">>> Days to Maturity: "))
-        conf['VOLATILITY'] = float(input(">>> Volatility % (e.g. 25): "))
-        conf['RISK_FREE'] = float(input(">>> Risk Free Rate % (e.g. 3): "))
-    except ValueError:
-        print("Invalid input. Using default values.")
-        conf.update({'STRIKE': 100, 'DAYS': 30, 'VOLATILITY': 20, 'RISK_FREE': 3})
-        
-    conf['SIMULATIONS'] = 50000
-    return conf
-
 def main():
     print("="*60)
-    print(f"      QUANT ENGINE (VS Code / Colab Compatible)")
+    print(f"      QUANT ENGINE (Robust Mode)")
     print("="*60)
     
-    cfg = get_user_input()
+    ticker = input(">>> Ticker (e.g., NVDA): ").upper().strip()
     
-    # 1. Fetch Data
-    spot = fetch_price(cfg['TICKER'])
+    # Robust data fetch
+    spot = fetch_price_robust(ticker)
     
-    # 2. Setup
-    T = cfg['DAYS'] / 365.0
-    r = cfg['RISK_FREE'] / 100.0
-    sigma = cfg['VOLATILITY'] / 100.0
-    K = cfg['STRIKE']
+    try:
+        strike = float(input(">>> Strike Price: "))
+        days = float(input(">>> Days to Maturity: "))
+        vol = float(input(">>> Volatility % (e.g., 40): "))
+        rf = float(input(">>> Risk Free Rate % (e.g., 4): "))
+    except ValueError:
+        print("Invalid input. Using defaults (Strike=100, Days=30, Vol=40%, RiskFree=4%).")
+        strike, days, vol, rf = 100.0, 30.0, 40.0, 4.0
+
+    # Parameter normalization
+    T = days / 365.0
+    r = rf / 100.0
+    sigma = vol / 100.0
     
-    # 3. Engines
-    bs = BlackScholesEngine(spot, K, T, r, sigma)
-    mc = MonteCarloEngine(spot, K, T, r, sigma, cfg['SIMULATIONS'])
-    bt = BinomialTreeEngine(spot, K, T, r, sigma)
+    # Initialize Engines
+    bs = BlackScholesEngine(spot, strike, T, r, sigma)
+    mc = MonteCarloEngine(spot, strike, T, r, sigma, 50000)
+    bt = BinomialTreeEngine(spot, strike, T, r, sigma)
     
-    # 4. Results
+    # Run Calculations
     bs_c, bs_p = bs.price()
     mc_c, mc_p = mc.price()
     am_c, am_p = bt.price_american()
     greeks = bs.get_greeks()
     
+    # Output Results
     print("\n" + "-"*60)
     print(f"{'MODEL':<25} | {'CALL':<10} | {'PUT':<10}")
     print("-" * 60)
@@ -217,8 +200,8 @@ def main():
     print(f"GREEKS | Delta: {greeks['Delta']:.2f} | Gamma: {greeks['Gamma']:.2f} | Vega: {greeks['Vega']:.2f} | Theta: {greeks['Theta']:.2f}")
     print("="*60)
 
-    # 5. Visuals
-    Visualizer(cfg['TICKER'], spot, K, T, r, sigma).plot_all()
+    # Plot
+    Visualizer(ticker, spot, strike, T, r, sigma).plot_all()
 
 if __name__ == "__main__":
     main()
