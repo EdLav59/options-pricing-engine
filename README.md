@@ -1,181 +1,160 @@
 # Options Pricing & Greeks Calculator
 
-**Interactive options pricing engine implementing Black-Scholes, Monte Carlo, and Binomial Tree models with real-time market data integration and implied volatility analysis.**
+A comprehensive options pricing engine implementing multiple valuation models with advanced sensitivity analysis and risk management features.
 
----
+## Overview
 
-## Project Overview
+This project implements three fundamental option pricing methodologies alongside sensitivity analysis and delta-hedging simulation capabilities. The engine supports both European and American options, with real-time market data integration for implied volatility analysis.
 
-This project provides a comprehensive toolkit for options pricing and risk analysis, designed for quantitative finance applications. Key features include:
+## Features
 
-- **Multiple Pricing Models**: Black-Scholes (analytical), Monte Carlo (simulation-based), Binomial Trees (American options)
-- **Implied Volatility Solver**: Newton-Raphson optimization to extract market-implied volatilities
-- **Greeks Calculator**: Delta, Gamma, Vega, Theta, Rho with sensitivity analysis
-- **Interactive Visualizations**: Plotly-powered 3D surfaces, heatmaps, and volatility smiles
-- **Market Data Integration**: Real-time options chain fetching from Yahoo Finance
+**Core Pricing Models:**
+- Black-Scholes analytical solution for European options
+- Monte Carlo simulation with 100,000+ paths and variance estimates
+- Cox-Ross-Rubinstein binomial tree for American options
 
----
+**Advanced Analytics:**
+- Newton-Raphson implied volatility solver
+- Comprehensive Greeks calculation (Delta, Gamma, Vega, Theta, Rho)
+- Multi-dimensional sensitivity analysis (volatility, maturity, interest rates)
+- Delta-hedging simulator with dynamic rebalancing
+- Market price comparison and arbitrage detection
 
-## Quick Start
+**Visualization:**
+- Interactive Plotly dashboards
+- 3D option price surfaces
+- Greeks sensitivity profiles
+- Volatility smile construction
+- Hedging performance metrics
 
-### Installation
+## Installation
 
 ```bash
-git clone https://github.com/yourusername/options-pricing-engine.git
+git clone https://github.com/EdLav59/options-pricing-engine.git
 cd options-pricing-engine
 pip install -r requirements.txt
 ```
 
-### Usage
+## Usage
+
+### Basic Pricing
 
 ```bash
 python quant_engine.py
 ```
 
-**Example Interaction:**
+Provides pricing from three models, Greeks calculation, and interactive visualization.
+
+### Comprehensive Analysis
+
+```bash
+python quant_engine_full.py
+```
+
+Includes all basic features plus sensitivity analysis, hedging simulation, and risk management recommendations.
+
+### Example
+
 ```
 >>> Ticker Symbol: NVDA
->>> Strike Price: 145
+>>> Strike Price: 188
 >>> Days to Maturity: 30
->>> Volatility %: 40
->>> Risk-Free Rate %: 4.5
+>>> Volatility: 42
+>>> Risk-Free Rate: 4.5
 >>> Monte Carlo Simulations: 100000
 ```
 
----
+## Mathematical Framework
 
-## Features
+### Black-Scholes Model
 
-### 1. **Black-Scholes Model**
-Analytical solution for European options using the Black-Scholes-Merton framework.
+The Black-Scholes formula provides closed-form solutions for European options:
 
-**Call Price Formula:**
 ```
-C = S₀N(d₁) - Ke⁻ʳᵀN(d₂)
+C = S₀N(d₁) - Ke^(-rT)N(d₂)
+P = Ke^(-rT)N(-d₂) - S₀N(-d₁)
 
 where:
 d₁ = [ln(S₀/K) + (r + σ²/2)T] / (σ√T)
 d₂ = d₁ - σ√T
 ```
 
-**Greeks:**
-- **Delta (Δ)**: Rate of change of option price w.r.t. underlying price
-- **Gamma (Γ)**: Rate of change of delta w.r.t. underlying price
-- **Vega (ν)**: Sensitivity to volatility changes
-- **Theta (Θ)**: Time decay of option value
-- **Rho (ρ)**: Sensitivity to interest rate changes
+### Greeks
 
-### 2. **Monte Carlo Simulation**
-Risk-neutral valuation using geometric Brownian motion:
+First and second-order partial derivatives measure option sensitivities:
 
-```
-Sₜ = S₀ exp[(r - σ²/2)T + σ√T·Z]
+- **Delta (Δ):** ∂V/∂S - sensitivity to underlying price changes
+- **Gamma (Γ):** ∂²V/∂S² - rate of change of delta
+- **Vega (ν):** ∂V/∂σ - sensitivity to volatility changes
+- **Theta (Θ):** ∂V/∂t - time decay rate
+- **Rho (ρ):** ∂V/∂r - sensitivity to interest rate changes
 
-where Z ~ N(0,1)
-```
+### Monte Carlo Simulation
 
-**Features:**
-- 100,000+ simulation paths for high accuracy
-- Standard error estimation
-- Variance reduction techniques (antithetic variates)
-
-### 3. **Binomial Tree Model**
-Cox-Ross-Rubinstein binomial lattice for American options with early exercise:
+Options are valued through risk-neutral expectation:
 
 ```
-u = exp(σ√Δt)
-d = 1/u
-p = (eʳᐃᵗ - d) / (u - d)
+V₀ = e^(-rT) E^Q[max(S_T - K, 0)]
+
+where S_T = S₀ exp[(r - σ²/2)T + σ√T·Z], Z ~ N(0,1)
 ```
 
-**Advantages:**
-- Handles American options (early exercise)
-- 300+ time steps for accuracy
-- Backward induction algorithm
+## Model Validation
 
-### 4. **Implied Volatility Solver**
-Newton-Raphson iterative method to extract market-implied volatility:
+All three pricing models demonstrate convergence:
 
 ```
-σₙ₊₁ = σₙ - [C_BS(σₙ) - C_market] / Vega(σₙ)
+Strike: $188, Spot: $188.52, T: 30 days, σ: 42%
+
+Black-Scholes:  $9.64
+Monte Carlo:    $9.66 (±0.05)
+Binomial Tree:  $9.64
+
+Maximum deviation: $0.02 (0.2%)
 ```
 
-**Applications:**
-- Volatility smile construction
-- Arbitrage detection
-- Model calibration
+## Sensitivity Analysis
 
-### 5. **Interactive Dashboard**
-Plotly-powered visualizations:
+The engine performs systematic parameter sweeps:
 
-- **3D Price Surface**: Option value across spot prices and maturities
-- **Greeks Analysis**: Delta/Gamma profiles
-- **Volatility Smile**: Market-implied volatility across strikes
-- **Gamma Heatmap**: Risk exposure visualization
+**Volatility Sensitivity:** Tests option response across 10%-80% volatility range
+**Maturity Sensitivity:** Analyzes time decay from 5 to 180 days
+**Rate Sensitivity:** Measures interest rate impact from 0% to 10%
 
----
+## Delta-Hedging Simulation
 
-## Mathematical Framework
+Simulates dynamic hedging strategies:
+- Geometric Brownian motion price paths
+- Configurable rebalancing frequency
+- P&L decomposition (directional vs gamma)
+- Transaction cost analysis
 
-### Black-Scholes PDE
-The option pricing follows the fundamental PDE:
+## Results
 
-```
-∂V/∂t + ½σ²S²(∂²V/∂S²) + rS(∂V/∂S) - rV = 0
-```
+Example comparative analysis across moneyness levels demonstrates Greek concentration at-the-money:
 
-### Risk-Neutral Pricing
-Under the risk-neutral measure Q:
+| Metric | ITM (K=150) | ATM (K=188) | OTM (K=220) |
+|--------|-------------|-------------|-------------|
+| Delta | 0.977 | 0.545 | 0.117 |
+| Gamma | 0.0024 | 0.0175 | 0.0086 |
+| Vega | 0.030 | 0.214 | 0.106 |
 
-```
-V₀ = e⁻ʳᵀ E^Q[max(Sₜ - K, 0)]
-```
-
-### Put-Call Parity
-European options satisfy:
-
-```
-C - P = S₀ - Ke⁻ʳᵀ
-```
-
----
-
-## Example Output
-
-```
-MODEL                          | CALL         | PUT         
-----------------------------------------------------------------------
-Black-Scholes (European)       | $12.45       | $7.89       
-Monte Carlo (European)         | $12.43       | $7.91       
-  └─ Std Error                 | ±$0.05       | ±$0.04      
-Binomial Tree (American)       | $12.50       | $8.10       
-----------------------------------------------------------------------
-
-GREEKS                         | VALUE       
-----------------------------------------------------------------------
-Delta                          | 0.6234      
-Gamma                          | 0.0145      
-Vega                           | 0.2987      
-Theta                          | -0.0523     
-Rho                            | 0.1876      
-```
-
----
+The ATM position exhibits 7x higher gamma and vega compared to deep ITM, validating theoretical predictions.
 
 ## References
 
-1. Black, F., & Scholes, M. (1973). *The Pricing of Options and Corporate Liabilities*. Journal of Political Economy.
-2. Cox, J. C., Ross, S. A., & Rubinstein, M. (1979). *Option pricing: A simplified approach*. Journal of Financial Economics.
+1. Black, F., & Scholes, M. (1973). The Pricing of Options and Corporate Liabilities. *Journal of Political Economy*, 81(3), 637-654.
+
+2. Cox, J. C., Ross, S. A., & Rubinstein, M. (1979). Option pricing: A simplified approach. *Journal of Financial Economics*, 7(3), 229-263.
+
 3. Hull, J. C. (2018). *Options, Futures, and Other Derivatives* (10th ed.). Pearson.
-4. Gatheral, J. (2006). *The Volatility Surface: A Practitioner's Guide*. Wiley.
 
-
----
-
-## Contact
-
-**Edouard Lavalard** 
+4. Gatheral, J. (2006). *The Volatility Surface: A Practitioner's Guide*. Wiley Finance.
 
 ## License
 
-This project is licensed under the MIT License
+MIT License - See LICENSE file for details.
+
+## Author
+
+Edouard Lavaud  
