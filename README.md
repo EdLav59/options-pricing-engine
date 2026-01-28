@@ -44,7 +44,7 @@ python quant_engine.py
 
 ---
 
-## 📊 Features
+## Features
 
 ### 1. **Black-Scholes Model**
 Analytical solution for European options using the Black-Scholes-Merton framework.
@@ -169,6 +169,13 @@ Rho                            | 0.1876
 3. Hull, J. C. (2018). *Options, Futures, and Other Derivatives* (10th ed.). Pearson.
 4. Gatheral, J. (2006). *The Volatility Surface: A Practitioner's Guide*. Wiley.
 
+
+---
+
 ## Contact
 
 **Edouard Lavalard** 
+
+## License
+
+This project is licensed under the MIT License
