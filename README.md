@@ -157,4 +157,4 @@ MIT License - See LICENSE file for details.
 
 ## Author
 
-Edouard Lavaud  
+Edouard Lavalard  
