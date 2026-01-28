@@ -1,0 +1,167 @@
+================================================================================
+               OPTIONS PRICING & RISK ANALYSIS ENGINE
+                    (Extended with Sensitivity Analysis)
+================================================================================
+
+>>> Ticker Symbol (e.g., NVDA, AAPL): NVDA
+   [INFO] Fetching live data for NVDA...
+   [SUCCESS] Spot Price: $188.52
+>>> Strike Price: 220
+>>> Days to Maturity: 30
+>>> Volatility % (e.g., 35): 42
+>>> Risk-Free Rate % (e.g., 4.5): 4.5
+>>> Monte Carlo Simulations (e.g., 100000): 100000
+
+────────────────────────────────────────────────────────────────────────────────
+   PART 1: OPTIONS PRICING MODELS
+────────────────────────────────────────────────────────────────────────────────
+
+MODEL                          | CALL         | PUT         
+────────────────────────────────────────────────────────────────────────────────
+Black-Scholes (European)       | $1.23        | $31.90      
+Monte Carlo (European)         | $1.24        | $31.88      
+  └─ Std Error                 | ±$0.02       | ±$0.06      
+Binomial Tree (American)       | $1.23        | $32.19      
+────────────────────────────────────────────────────────────────────────────────
+
+GREEKS                         | VALUE       
+────────────────────────────────────────────────────────────────────────────────
+Delta                          | 0.1167      
+Gamma                          | 0.0086      
+Vega                           | 0.1060      
+Theta                          | -0.0768     
+Rho                            | 0.0171      
+================================================================================
+
+────────────────────────────────────────────────────────────────────────────────
+   PART 2: IMPLIED VOLATILITY ANALYSIS
+────────────────────────────────────────────────────────────────────────────────
+   [INFO] Attempting to fetch options chain for NVDA...
+   [WARNING] Insufficient liquid options
+
+   Generating standard pricing dashboard...
+
+   [INFO] Generating interactive visualizations...
+   [SUCCESS] Dashboard generated
+
+────────────────────────────────────────────────────────────────────────────────
+   PART 3: ADVANCED SENSITIVITY & RISK ANALYSIS
+────────────────────────────────────────────────────────────────────────────────
+
+>>> Run advanced sensitivity & hedging analysis? (y/n): y
+
+======================================================================
+=                      ADVANCED ANALYSIS SUITE                       =
+======================================================================
+
+[1/4] Running Sensitivity Analysis...
+
+======================================================================
+   COMPREHENSIVE SENSITIVITY ANALYSIS
+======================================================================
+
+1. VOLATILITY SENSITIVITY
+----------------------------------------------------------------------
+   Volatility range: 10% - 80%
+   Call price range: $0.00 - $7.13
+   Total impact: $7.13 (9388964462.4% change)
+
+2. MATURITY SENSITIVITY
+----------------------------------------------------------------------
+   Maturity range: 5 - 180 days
+   Call price decay: $12.66 → $0.00
+   Time decay impact: $-12.65 (theta effect)
+
+3. INTEREST RATE SENSITIVITY
+----------------------------------------------------------------------
+   Rate range: 0.0% - 10.0%
+   Call price range: $1.16 - $1.33
+   Total impact: $0.17 (rho effect)
+
+[2/4] Running Delta-Hedging Simulation...
+
+======================================================================
+   DELTA-HEDGING SIMULATION RESULTS
+======================================================================
+
+Position: LONG 1 Call @ K=$220.0
+Initial Spot: $188.52 | Final Spot: $165.77
+Rebalance Frequency: daily (27 times)
+
+Final P&L: $-1.51
+Max Drawdown: $-1.51
+P&L Volatility: $1.51
+Cumulative Gamma P&L: $1.14
+======================================================================
+
+[3/4] Skipping market comparison (no data available)
+
+[4/4] Generating Risk Management Summary...
+
+======================================================================
+   RISK MANAGEMENT SUMMARY
+======================================================================
+
+Position: Long 1 Call @ K=$220.00
+Current Value: $1.23
+
+1. DIRECTIONAL RISK (Delta)
+----------------------------------------------------------------------
+   Delta: 0.1167
+   → For $1 move in stock: P&L changes by $0.12
+   → Delta-neutral hedge: Short 0 shares
+
+2. CONVEXITY RISK (Gamma)
+----------------------------------------------------------------------
+   Gamma: 0.0086
+   → For $1 move: Delta changes by 0.0086
+   → Rehedge cost for 1% move: $0.02
+
+3. VOLATILITY RISK (Vega)
+----------------------------------------------------------------------
+   Vega: 0.1060
+   → For 1% vol increase: P&L increases by $0.11
+   → Scenarios:
+      Vol 37%: $0.75 (-0.48)
+      Vol 42%: $1.23 (+0.00)
+      Vol 47%: $1.81 (+0.58)
+
+4. TIME DECAY (Theta)
+----------------------------------------------------------------------
+   Theta: -0.0768
+   → Daily P&L from time decay: $-0.08
+   → Weekly decay: $-0.54
+
+5. HEDGING PERFORMANCE
+----------------------------------------------------------------------
+   Simulation Final P&L: $-1.51
+   P&L Volatility: $1.51
+   → Hedging did not reduce risk
+
+6. KEY RECOMMENDATIONS
+----------------------------------------------------------------------
+   [OK] Low Gamma → Rehedge less frequently (weekly)
+   [WARNING] High Vega exposure → Consider vol hedging
+   [WARNING] Significant time decay → Monitor expiration risk
+======================================================================
+
+>>> Export analysis results to CSV? (y/n): y
+   Exported: NVDA_volatility_sensitivity.csv
+   Exported: NVDA_maturity_sensitivity.csv
+   Exported: NVDA_interest_rate_sensitivity.csv
+   Exported: NVDA_hedging_simulation.csv
+
+================================================================================
+   ANALYSIS COMPLETE
+================================================================================
+
+   Summary for NVDA $220.0 Call:
+   • Theoretical Price: $1.23
+   • Delta: 0.117 (hedge with 11 shares)
+   • Gamma: 0.0086 (rehedge for $0.02 per 1% move)
+   • Daily Theta: $-0.08
+   • Vega: $0.11 per 1% vol
+
+================================================================================
+   Thank you for using the Options Pricing & Risk Analysis Engine!
+================================================================================
