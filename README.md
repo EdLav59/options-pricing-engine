@@ -1,74 +1,47 @@
 # Options Pricing & Greeks Calculator
 
-A comprehensive options pricing engine implementing multiple valuation models with advanced sensitivity analysis and risk management features.
+A multi-model options pricing engine implementing Black-Scholes, Monte Carlo, and Binomial Tree methodologies with comprehensive sensitivity analysis and dynamic delta-hedging simulation.
 
 ## Overview
 
-This project implements three fundamental option pricing methodologies alongside sensitivity analysis and delta-hedging simulation capabilities. The engine supports both European and American options, with real-time market data integration for implied volatility analysis.
+This project implements three fundamental option pricing models alongside advanced risk analytics including Greeks calculation, multi-dimensional sensitivity analysis, and delta-hedging performance simulation. The engine supports both European and American options with real-time market data integration.
 
-## Features
+## Core Features
 
-**Core Pricing Models:**
+**Pricing Models:**
 - Black-Scholes analytical solution for European options
 - Monte Carlo simulation with 100,000+ paths and variance estimates
 - Cox-Ross-Rubinstein binomial tree for American options
 
-**Advanced Analytics:**
+**Risk Analytics:**
 - Newton-Raphson implied volatility solver
-- Comprehensive Greeks calculation (Delta, Gamma, Vega, Theta, Rho)
-- Multi-dimensional sensitivity analysis (volatility, maturity, interest rates)
-- Delta-hedging simulator with dynamic rebalancing
-- Market price comparison and arbitrage detection
+- Comprehensive Greeks (Delta, Gamma, Vega, Theta, Rho)
+- Multi-dimensional sensitivity analysis across volatility, maturity, and interest rates
+- Dynamic delta-hedging simulator with configurable rebalancing frequency
+- Gamma P&L decomposition and transaction cost analysis
 
 **Visualization:**
 - Interactive Plotly dashboards
 - 3D option price surfaces
-- Greeks sensitivity profiles
+- Greeks sensitivity profiles across moneyness spectrum
 - Volatility smile construction
-- Hedging performance metrics
+- Real-time hedging performance metrics
 
-## Installation
-
-```bash
-git clone https://github.com/EdLav59/options-pricing-engine.git
-cd options-pricing-engine
-pip install -r requirements.txt
+**Example inputs:**
 ```
-
-## Usage
-
-### Basic Pricing
-
-```bash
-python quant_engine.py
-```
-
-Provides pricing from three models, Greeks calculation, and interactive visualization.
-
-### Comprehensive Analysis
-
-```bash
-python quant_engine_full.py
-```
-
-Includes all basic features plus sensitivity analysis, hedging simulation, and risk management recommendations.
-
-### Example
-
-```
->>> Ticker Symbol: NVDA
->>> Strike Price: 188
->>> Days to Maturity: 30
->>> Volatility: 42
->>> Risk-Free Rate: 4.5
->>> Monte Carlo Simulations: 100000
+Ticker: NVDA
+Strike: 188
+Days to Maturity: 30
+Volatility: 42%
+Risk-Free Rate: 4.5%
+Simulations: 100000
 ```
 
 ## Mathematical Framework
 
 ### Black-Scholes Model
 
-The Black-Scholes formula provides closed-form solutions for European options:
+European option valuation through closed-form solution:
 
 ```
 C = S₀N(d₁) - Ke^(-rT)N(d₂)
@@ -81,17 +54,17 @@ d₂ = d₁ - σ√T
 
 ### Greeks
 
-First and second-order partial derivatives measure option sensitivities:
+First and second-order partial derivatives quantifying option sensitivities:
 
-- **Delta (Δ):** ∂V/∂S - sensitivity to underlying price changes
-- **Gamma (Γ):** ∂²V/∂S² - rate of change of delta
-- **Vega (ν):** ∂V/∂σ - sensitivity to volatility changes
+- **Delta (Δ):** ∂V/∂S - directional exposure to underlying price
+- **Gamma (Γ):** ∂²V/∂S² - delta convexity and rehedging frequency
+- **Vega (ν):** ∂V/∂σ - exposure to volatility changes
 - **Theta (Θ):** ∂V/∂t - time decay rate
-- **Rho (ρ):** ∂V/∂r - sensitivity to interest rate changes
+- **Rho (ρ):** ∂V/∂r - interest rate sensitivity
 
 ### Monte Carlo Simulation
 
-Options are valued through risk-neutral expectation:
+Risk-neutral valuation through path simulation:
 
 ```
 V₀ = e^(-rT) E^Q[max(S_T - K, 0)]
@@ -99,47 +72,85 @@ V₀ = e^(-rT) E^Q[max(S_T - K, 0)]
 where S_T = S₀ exp[(r - σ²/2)T + σ√T·Z], Z ~ N(0,1)
 ```
 
-## Model Validation
+## Empirical Results
 
-All three pricing models demonstrate convergence:
+### Test Configuration
 
+**Underlying:** NVIDIA (NVDA)  
+**Spot Price:** $188.52  
+**Time to Maturity:** 30 days  
+**Volatility:** 42% annualized  
+**Risk-Free Rate:** 4.5%
+
+### Comparative Analysis Across Moneyness
+
+| Metric | Deep ITM (K=150) | ATM (K=188) | OTM (K=220) |
+|--------|------------------|-------------|-------------|
+| **Call Price** | $39.28 | $9.64 | $1.23 |
+| **Intrinsic Value** | $38.52 | $0.52 | $0.00 |
+| **Time Value** | $0.76 | $9.12 | $1.23 |
+| **Delta** | 0.977 | 0.545 | 0.117 |
+| **Gamma** | 0.0024 | 0.0175 | 0.0086 |
+| **Vega** | 0.030 | 0.214 | 0.106 |
+| **Theta (daily)** | -$0.04 | -$0.16 | -$0.08 |
+
+### Model Convergence
+
+All three pricing models demonstrate convergence within acceptable tolerance:
+
+**ATM Option (K=$188):**
 ```
-Strike: $188, Spot: $188.52, T: 30 days, σ: 42%
-
 Black-Scholes:  $9.64
-Monte Carlo:    $9.66 (±0.05)
+Monte Carlo:    $9.66 ± $0.05
 Binomial Tree:  $9.64
-
-Maximum deviation: $0.02 (0.2%)
+Maximum Deviation: $0.02 (0.2%)
 ```
 
-## Sensitivity Analysis
+### Key Findings
 
-The engine performs systematic parameter sweeps:
+**1. Greek Concentration at ATM**
 
-**Volatility Sensitivity:** Tests option response across 10%-80% volatility range
-**Maturity Sensitivity:** Analyzes time decay from 5 to 180 days
-**Rate Sensitivity:** Measures interest rate impact from 0% to 10%
+Gamma and vega maximize at-the-money, with values approximately 7x higher than deep ITM positions:
+- ATM gamma (0.0175) drives frequent rehedging requirements
+- ATM vega (0.214) creates maximum volatility exposure
+- Confirms theoretical predictions of Greek behavior across strike spectrum
 
-## Delta-Hedging Simulation
+**2. Volatility Sensitivity**
 
-Simulates dynamic hedging strategies:
-- Geometric Brownian motion price paths
-- Configurable rebalancing frequency
-- P&L decomposition (directional vs gamma)
-- Transaction cost analysis
+Systematic analysis across 10%-80% volatility range:
+- Deep ITM: 8% total price change (minimal optionality)
+- ATM: 532% price change ($2.81 → $17.77)
+- OTM: High percentage sensitivity on small base
 
-## Results
+ATM options optimal for volatility trading strategies (straddles/strangles).
 
-Example comparative analysis across moneyness levels demonstrates Greek concentration at-the-money:
+**3. Time Decay Patterns**
 
-| Metric | ITM (K=150) | ATM (K=188) | OTM (K=220) |
-|--------|-------------|-------------|-------------|
-| Delta | 0.977 | 0.545 | 0.117 |
-| Gamma | 0.0024 | 0.0175 | 0.0086 |
-| Vega | 0.030 | 0.214 | 0.106 |
+Non-linear theta effect quantified across maturity spectrum:
+- ATM theta 4x higher than deep ITM
+- Time value accelerates toward expiration
+- Daily decay: ITM -$0.04 (1%), ATM -$0.16 (1.7%), OTM -$0.08 (6.5%)
 
-The ATM position exhibits 7x higher gamma and vega compared to deep ITM, validating theoretical predictions.
+**4. Delta-Hedging Performance**
+
+Dynamic hedging simulation with daily rebalancing (27 rebalances):
+
+| Strike | Final P&L | Gamma P&L | P&L Volatility |
+|--------|-----------|-----------|----------------|
+| K=150 (ITM) | -$6.68 | +$1.97 | $20.34 |
+| K=188 (ATM) | -$9.58 | +$4.94 | $9.24 |
+| K=220 (OTM) | -$1.51 | +$1.14 | $1.51 |
+
+All simulations exhibited losses due to 12% adverse stock movement ($188.52 → $165.77). ATM case demonstrated gamma/transaction cost tradeoff: despite 27 daily rebalances, P&L volatility remained at $9.24, though gamma P&L of +$4.94 partially offset directional losses.
+
+## Results Interpretation
+
+The comparative analysis validates theoretical option pricing frameworks:
+
+1. **Moneyness Effects:** Greeks concentration at ATM has direct implications for volatility trading and hedging frequency
+2. **Model Robustness:** <$0.07 deviation across models demonstrates implementation accuracy
+3. **Risk Management:** Sensitivity analysis quantifies exposure across multiple dimensions
+4. **Practical Hedging:** Simulation demonstrates gamma/transaction cost tradeoffs inherent in dynamic hedging
 
 ## References
 
@@ -153,7 +164,7 @@ The ATM position exhibits 7x higher gamma and vega compared to deep ITM, validat
 
 ## License
 
-MIT License - See LICENSE file for details.
+MIT License
 
 ## Author
 
